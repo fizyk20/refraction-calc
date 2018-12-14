@@ -1,23 +1,12 @@
-extern crate clap;
-extern crate numeric_algs as na;
-#[macro_use]
-extern crate nom;
-extern crate regex;
-
-mod air;
-mod flat;
 mod params;
-mod path;
-mod ray_state;
-mod spherical;
 
-use params::*;
-use path::{create_path, Path};
+use crate::params::*;
+use atm_refraction::Path;
 
 pub static PI: f64 = 3.1415926536;
 
 fn find_dist_for_h(ray: &Path, tgt_h: f64) -> f64 {
-    let (mut min_dist, mut max_dist) = (0.0, 5000.0);
+    let (mut min_dist, mut max_dist) = (0.0, 5000e3);
 
     while max_dist - min_dist > 0.00001 {
         let cur_dist = 0.5 * (min_dist + max_dist);
@@ -37,11 +26,9 @@ fn main() {
 
     if params.verbose {
         println!("Ray parameters chosen:");
-        match params.env.shape {
-            EarthShape::Spherical { radius } => {
-                println!("Earth: spherical with radius {} km", radius / 1e3)
-            }
-            EarthShape::Flat => println!("Earth: flat"),
+        match params.env.radius() {
+            Some(radius) => println!("Earth: spherical with radius {} km", radius / 1e3),
+            None => println!("Earth: flat"),
         }
         println!("Starting altitude: {} m ASL", params.ray.start_h);
     }
@@ -66,9 +53,12 @@ fn main() {
             }
             Output::Angle => {
                 if params.verbose {
-                    println!("Starting angle: {} degrees", ray.start_angle() * 180.0 / PI);
+                    println!(
+                        "Starting angle: {} degrees",
+                        ray.angle_at_dist(0.0) * 180.0 / PI
+                    );
                 } else {
-                    println!("{}", ray.start_angle() * 180.0 / PI);
+                    println!("{}", ray.angle_at_dist(0.0) * 180.0 / PI);
                 }
             }
             Output::Horizon => {

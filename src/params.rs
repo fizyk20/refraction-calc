@@ -1,4 +1,7 @@
-use air::{get_atmosphere, us76_atmosphere, Atmosphere};
+use atm_refraction::{
+    air::{get_atmosphere, us76_atmosphere},
+    EarthShape, Environment, Path,
+};
 use clap::{App, Arg};
 
 /// Ray direction description
@@ -27,19 +30,6 @@ pub enum Output {
     Angle,
     /// output the angle to the horizon
     Horizon,
-}
-
-/// the shape of the simulated Earth
-#[derive(Clone, Copy)]
-pub enum EarthShape {
-    Spherical { radius: f64 },
-    Flat,
-}
-
-#[derive(Clone)]
-pub struct Environment {
-    pub shape: EarthShape,
-    pub atmosphere: Atmosphere,
 }
 
 pub struct Params {
@@ -152,9 +142,10 @@ pub fn parse_arguments() -> Params {
             (None, Some(h), Some(dist)) => RayDir::Target {
                 h: h.parse().ok().expect("Invalid altitude passed to --tgt-h"),
                 dist: dist
-                    .parse()
+                    .parse::<f64>()
                     .ok()
-                    .expect("Invalid distance passed to --tgt-dist"),
+                    .expect("Invalid distance passed to --tgt-dist")
+                    * 1e3,
             },
             (None, None, None) => panic!("No ray direction chosen!"),
             _ => panic!("Conflicting options detected (--start-angle, --tgt-h, --tgt-dist)"),
@@ -183,9 +174,9 @@ pub fn parse_arguments() -> Params {
     let mut output = Vec::new();
     if let Some(dist) = matches
         .value_of("output_dist")
-        .and_then(|val| val.parse().ok())
+        .and_then(|val| val.parse::<f64>().ok())
     {
-        output.push(Output::HAtDist(dist));
+        output.push(Output::HAtDist(dist * 1e3));
     }
     if matches.is_present("output_ang") {
         output.push(Output::Angle);
@@ -199,5 +190,19 @@ pub fn parse_arguments() -> Params {
         env: Environment { shape, atmosphere },
         output,
         verbose: matches.is_present("verbose"),
+    }
+}
+
+pub fn create_path<'a>(params: &'a Params) -> Box<Path<'a> + 'a> {
+    match params.ray.dir {
+        RayDir::Angle(ang) => params
+            .env
+            .cast_ray(params.ray.start_h, ang, params.straight),
+        RayDir::Target { h, dist } => {
+            params
+                .env
+                .cast_ray_target(params.ray.start_h, h, dist, params.straight)
+        }
+        RayDir::Horizon => params.env.cast_ray(0.0, 0.0, params.straight),
     }
 }
