@@ -3,8 +3,6 @@ mod params;
 use crate::params::*;
 use atm_refraction::Path;
 
-pub static PI: f64 = 3.1415926536;
-
 fn find_dist_for_h(ray: &Path, tgt_h: f64) -> f64 {
     let (mut min_dist, mut max_dist) = (0.0, 5000e3);
 
@@ -55,19 +53,19 @@ fn main() {
                 if params.verbose {
                     println!(
                         "Starting angle: {} degrees",
-                        ray.angle_at_dist(0.0) * 180.0 / PI
+                        ray.angle_at_dist(0.0).to_degrees()
                     );
                 } else {
-                    println!("{}", ray.angle_at_dist(0.0) * 180.0 / PI);
+                    println!("{}", ray.angle_at_dist(0.0).to_degrees());
                 }
             }
             Output::Horizon => {
                 let dist_to_target_h = find_dist_for_h(&*ray, params.ray.start_h);
                 let ang = ray.angle_at_dist(dist_to_target_h);
                 if params.verbose {
-                    println!("Angle to the horizon: {} degrees", -ang * 180.0 / PI);
+                    println!("Angle to the horizon: {} degrees", -ang.to_degrees());
                 } else {
-                    println!("{}", -ang * 180.0 / PI);
+                    println!("{}", -ang.to_degrees());
                 }
             }
         }
