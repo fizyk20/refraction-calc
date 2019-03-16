@@ -2,7 +2,7 @@ use atm_refraction::{
     air::{get_atmosphere, us76_atmosphere},
     EarthShape, Environment, Path,
 };
-use clap::{App, Arg};
+use clap::{App, AppSettings, Arg};
 
 /// Ray direction description
 pub enum RayDir {
@@ -43,6 +43,7 @@ pub struct Params {
 pub fn parse_arguments() -> Params {
     let matches = App::new("Atmospheric Refraction Calculator")
         .about("Calculates paths of light in Earth's atmosphere")
+        .setting(AppSettings::AllowLeadingHyphen)
         .arg(
             Arg::with_name("start_h")
                 .short("h")
