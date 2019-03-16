@@ -196,9 +196,11 @@ pub fn parse_arguments() -> Params {
 
 pub fn create_path<'a>(params: &'a Params) -> Box<Path<'a> + 'a> {
     match params.ray.dir {
-        RayDir::Angle(ang) => params
-            .env
-            .cast_ray(params.ray.start_h, ang, params.straight),
+        RayDir::Angle(ang) => {
+            params
+                .env
+                .cast_ray(params.ray.start_h, ang.to_radians(), params.straight)
+        }
         RayDir::Target { h, dist } => {
             params
                 .env
