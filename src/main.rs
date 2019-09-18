@@ -59,13 +59,24 @@ fn main() {
                     println!("{}", ray.angle_at_dist(0.0).to_degrees());
                 }
             }
-            Output::Horizon => {
+            Output::HorizonAngle => {
                 let dist_to_target_h = find_dist_for_h(&*ray, params.ray.start_h);
                 let ang = ray.angle_at_dist(dist_to_target_h);
                 if params.verbose {
                     println!("Angle to the horizon: {} degrees", -ang.to_degrees());
                 } else {
                     println!("{}", -ang.to_degrees());
+                }
+            }
+            Output::HorizonDistance => {
+                let dist_to_target_h = find_dist_for_h(&*ray, params.ray.start_h);
+                if params.verbose {
+                    println!(
+                        "Distance to the horizon: {} kilometers",
+                        dist_to_target_h / 1000.0
+                    );
+                } else {
+                    println!("{}", dist_to_target_h / 1000.0);
                 }
             }
         }

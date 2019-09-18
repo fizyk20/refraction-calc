@@ -29,7 +29,9 @@ pub enum Output {
     /// output starting angle of the ray
     Angle,
     /// output the angle to the horizon
-    Horizon,
+    HorizonAngle,
+    /// Output the distance to the horizon
+    HorizonDistance,
 }
 
 pub struct Params {
@@ -109,6 +111,11 @@ pub fn parse_arguments() -> Params {
                 .help("Output the angle to the horizon")
                 .takes_value(false),
         ).arg(
+            Arg::with_name("output_horizon_dist")
+                .long("output-horizon-dist")
+                .help("Output the distance to the horizon")
+                .takes_value(false),
+        ).arg(
             Arg::with_name("straight")
                 .short("s")
                 .long("straight")
@@ -131,27 +138,28 @@ pub fn parse_arguments() -> Params {
     let tgt_h = matches.value_of("target_h");
     let tgt_dist = matches.value_of("target_dist");
 
-    let ray_dir = if matches.is_present("output_horizon") {
-        RayDir::Horizon
-    } else {
-        match (start_angle, tgt_h, tgt_dist) {
-            (Some(ang), None, None) => RayDir::Angle(
-                ang.parse()
-                    .ok()
-                    .expect("Invalid angle passed to --start-angle"),
-            ),
-            (None, Some(h), Some(dist)) => RayDir::Target {
-                h: h.parse().ok().expect("Invalid altitude passed to --tgt-h"),
-                dist: dist
-                    .parse::<f64>()
-                    .ok()
-                    .expect("Invalid distance passed to --tgt-dist")
-                    * 1e3,
-            },
-            (None, None, None) => panic!("No ray direction chosen!"),
-            _ => panic!("Conflicting options detected (--start-angle, --tgt-h, --tgt-dist)"),
-        }
-    };
+    let ray_dir =
+        if matches.is_present("output_horizon") || matches.is_present("output_horizon_dist") {
+            RayDir::Horizon
+        } else {
+            match (start_angle, tgt_h, tgt_dist) {
+                (Some(ang), None, None) => RayDir::Angle(
+                    ang.parse()
+                        .ok()
+                        .expect("Invalid angle passed to --start-angle"),
+                ),
+                (None, Some(h), Some(dist)) => RayDir::Target {
+                    h: h.parse().ok().expect("Invalid altitude passed to --tgt-h"),
+                    dist: dist
+                        .parse::<f64>()
+                        .ok()
+                        .expect("Invalid distance passed to --tgt-dist")
+                        * 1e3,
+                },
+                (None, None, None) => panic!("No ray direction chosen!"),
+                _ => panic!("Conflicting options detected (--start-angle, --tgt-h, --tgt-dist)"),
+            }
+        };
     let ray = RayData {
         start_h,
         dir: ray_dir,
@@ -183,7 +191,10 @@ pub fn parse_arguments() -> Params {
         output.push(Output::Angle);
     }
     if matches.is_present("output_horizon") {
-        output = vec![Output::Horizon];
+        output = vec![Output::HorizonAngle];
+    }
+    if matches.is_present("output_horizon_dist") {
+        output = vec![Output::HorizonDistance];
     }
     Params {
         ray,
