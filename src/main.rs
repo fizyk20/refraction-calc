@@ -3,7 +3,7 @@ mod params;
 use crate::params::*;
 use atm_refraction::Path;
 
-fn find_dist_for_h(ray: &Path, tgt_h: f64) -> f64 {
+fn find_dist_for_h(ray: &dyn Path, tgt_h: f64) -> f64 {
     let (mut min_dist, mut max_dist) = (0.0, 5000e3);
 
     while max_dist - min_dist > 0.00001 {

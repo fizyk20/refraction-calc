@@ -205,7 +205,7 @@ pub fn parse_arguments() -> Params {
     }
 }
 
-pub fn create_path<'a>(params: &'a Params) -> Box<Path<'a> + 'a> {
+pub fn create_path<'a>(params: &'a Params) -> Box<dyn Path<'a> + 'a> {
     match params.ray.dir {
         RayDir::Angle(ang) => {
             params
