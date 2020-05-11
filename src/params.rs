@@ -32,6 +32,8 @@ pub enum Output {
     HorizonAngle,
     /// Output the distance to the horizon
     HorizonDistance,
+    /// Output the angle of deflection for rays from celestial objects
+    Astronomical,
 }
 
 pub struct Params {
@@ -116,6 +118,11 @@ pub fn parse_arguments() -> Params {
                 .help("Output the distance to the horizon")
                 .takes_value(false),
         ).arg(
+            Arg::with_name("output_astronomical")
+                .long("output-astronomical")
+                .help("Output the angle of deflection of rays from celestial objects")
+                .takes_value(false),
+        ).arg(
             Arg::with_name("straight")
                 .short("s")
                 .long("straight")
@@ -189,6 +196,9 @@ pub fn parse_arguments() -> Params {
     }
     if matches.is_present("output_ang") {
         output.push(Output::Angle);
+    }
+    if matches.is_present("output_astronomical") {
+        output.push(Output::Astronomical);
     }
     if matches.is_present("output_horizon") {
         output = vec![Output::HorizonAngle];

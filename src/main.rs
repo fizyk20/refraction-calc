@@ -1,7 +1,7 @@
 mod params;
 
 use crate::params::*;
-use atm_refraction::Path;
+use atm_refraction::{EarthShape, Path};
 
 fn find_dist_for_h(ray: &dyn Path, tgt_h: f64) -> f64 {
     let (mut min_dist, mut max_dist) = (0.0, 5000e3);
@@ -57,6 +57,24 @@ fn main() {
                     );
                 } else {
                     println!("{}", ray.angle_at_dist(0.0).to_degrees());
+                }
+            }
+            Output::Astronomical => {
+                let start_ang = ray.angle_at_dist(0.0);
+                let dist_to_200km = find_dist_for_h(&*ray, 2e5); // 2e5 m == 200 km
+                let final_ang = ray.angle_at_dist(dist_to_200km);
+                let deflection_ang = if let EarthShape::Spherical { radius } = params.env.shape {
+                    start_ang - final_ang + dist_to_200km / radius
+                } else {
+                    start_ang - final_ang
+                };
+                if params.verbose {
+                    println!(
+                        "Astronomical refraction angle: {} degrees",
+                        deflection_ang.to_degrees()
+                    );
+                } else {
+                    println!("{}", deflection_ang.to_degrees());
                 }
             }
             Output::HorizonAngle => {
