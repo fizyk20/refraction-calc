@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 clap = "2.*"
-atm-refraction = "0.1"
+atm-refraction = { path = "../atm-refraction" }
