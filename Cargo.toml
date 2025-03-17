@@ -6,4 +6,9 @@ edition = "2018"
 
 [dependencies]
 clap = "2.*"
-atm-refraction = { path = "../atm-refraction" }
+atm-refraction = "0.6"
+serde_yaml = "0.8"
+
+[features]
+default = ["atm-refraction/serialization"]
+

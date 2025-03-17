@@ -1,8 +1,9 @@
 use atm_refraction::{
-    air::{get_atmosphere, us76_atmosphere},
+    air::{us76_atmosphere, Atmosphere, AtmosphereDef},
     EarthShape, Environment, Path,
 };
 use clap::{App, AppSettings, Arg};
+use std::{fs::File, io::Read};
 
 /// Ray direction description
 pub enum RayDir {
@@ -209,7 +210,11 @@ pub fn parse_arguments() -> Params {
     Params {
         ray,
         straight: matches.is_present("straight"),
-        env: Environment { shape, atmosphere },
+        env: Environment {
+            shape,
+            atmosphere,
+            wavelength: 530e-9,
+        },
         output,
         verbose: matches.is_present("verbose"),
     }
@@ -229,4 +234,15 @@ pub fn create_path<'a>(params: &'a Params) -> Box<dyn Path<'a> + 'a> {
         }
         RayDir::Horizon => params.env.cast_ray(0.0, 0.0, params.straight),
     }
+}
+
+fn get_atmosphere(path: &str) -> Atmosphere {
+    let mut config_file =
+        File::open(path).unwrap_or_else(|_| panic!("couldn't open the config file {:?}", path));
+    let mut contents = String::new();
+    config_file
+        .read_to_string(&mut contents)
+        .unwrap_or_else(|_| panic!("failed reading from file {:?}", path));
+    let def = serde_yaml::from_str::<AtmosphereDef>(&contents).expect("failed parsing config file");
+    Atmosphere::from_def(def)
 }
